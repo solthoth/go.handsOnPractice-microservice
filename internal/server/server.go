@@ -7,7 +7,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/solthoth/go.handsonpractice/internal/database"
-	"github.com/solthoth/go.handsonpractice/internal/dberrors"
 	"github.com/solthoth/go.handsonpractice/internal/models"
 )
 
@@ -15,6 +14,11 @@ type Server interface {
     Start(port uint) error
     Readiness(ctx echo.Context) error
     Liveness(ctx echo.Context) error
+
+    GetCustomers(ctx echo.Context) error
+    GetProducts(ctx echo.Context) error
+    GetServices(ctx echo.Context) error
+    GetVendors(ctx echo.Context) error
 }
 
 type EchoServer struct {
@@ -42,11 +46,18 @@ func (s *EchoServer) Start(port uint) error {
 func (s *EchoServer) registerRoutes() {
     s.echo.GET("/readiness", s.Readiness)
     s.echo.GET("/liveness", s.Liveness)
-    api := s.echo.Group("/api") 
-    api.GET("/customers", s.GetCustomers)
-    api.GET("/vendors", s.GetVendors)
-    api.GET("/services", s.GetServices)
-    api.GET("/products/:vendorId", s.GetProducts)
+
+    customers := s.echo.Group("/customers")
+    customers.GET("", s.GetCustomers)
+
+    vendors := s.echo.Group("/vendors")
+    vendors.GET("", s.GetVendors)
+
+    services := s.echo.Group("/services")
+    services.GET("", s.GetServices)
+    
+    products := s.echo.Group("/products")
+    products.GET(":vendorId", s.GetProducts)
 }
 
 func (s *EchoServer) Readiness(ctx echo.Context) error {
@@ -59,41 +70,4 @@ func (s *EchoServer) Readiness(ctx echo.Context) error {
 
 func (s *EchoServer) Liveness(ctx echo.Context) error {
     return ctx.JSON(http.StatusOK, models.Health{Status: "OK"})
-}
-
-func (s *EchoServer) GetCustomers(ctx echo.Context) error {
-    customers := s.DB.GetCustomers()
-    if customers != nil {
-        return ctx.JSON(http.StatusOK, customers)
-    }
-    return ctx.JSON(http.StatusInternalServerError, nil)
-}
-
-func (s *EchoServer) GetVendors(ctx echo.Context) error {
-    customers := s.DB.GetVendors()
-    if customers != nil {
-        return ctx.JSON(http.StatusOK, customers)
-    }
-    return ctx.JSON(http.StatusInternalServerError, nil)
-}
-
-func (s *EchoServer) GetServices(ctx echo.Context) error {
-    services := s.DB.GetServices()
-    if services != nil {
-        return ctx.JSON(http.StatusOK, services)
-    }
-    return ctx.JSON(http.StatusInternalServerError, nil)
-}
-
-func (s *EchoServer) GetProducts(ctx echo.Context) error {
-    vendorId := ctx.Param("vendorId")
-    products := s.DB.GetProductsByVendorId(vendorId)
-    if products != nil {
-        return ctx.JSON(http.StatusOK, products)
-    }
-    err := &dberrors.NotFoundError{
-        Entity: "product",
-        ID: vendorId,
-    }
-    return ctx.JSON(http.StatusInternalServerError, err)
 }

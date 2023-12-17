@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,10 +13,10 @@ import (
 
 type DatabaseClient interface {
 	Ready() bool
-    GetCustomers() []models.Customer
-    GetVendors() []models.Vendor
-    GetServices() []models.Service
-    GetProductsByVendorId(vendorId string) []models.Product
+    GetCustomers(ctx context.Context) ([]models.Customer, error)
+    GetVendors(ctx context.Context) ([]models.Vendor, error)
+    GetServices(ctx context.Context) ([]models.Service, error)
+    GetProducts(ctx context.Context, vendorId string) ([]models.Product, error)
 }
 
 type Client struct {
@@ -52,37 +53,4 @@ func (c Client) Ready() bool {
 		return true
 	}
 	return false
-}
-
-func (c Client) GetCustomers() []models.Customer {
-    var customers []models.Customer
-    c.DB.Table("wisdom.customers").
-        Select("customer_id", "first_name", "last_name", "email", "phone", "address").
-        Scan(&customers)
-    return customers
-}
-
-func (c Client) GetVendors() []models.Vendor {
-    var vendors []models.Vendor
-    c.DB.Table("wisdom.vendors").
-        Select("vendor_id", "name", "contact", "phone", "email", "address").
-        Scan(&vendors)
-    return vendors
-}
-
-func (c Client) GetServices() []models.Service {
-    var services []models.Service
-    c.DB.Table("wisdom.services").
-        Select("service_id", "name", "price").
-        Scan(&services)
-    return services
-}
-
-func (c Client) GetProductsByVendorId(vendorId string) []models.Product {
-    var products []models.Product
-    c.DB.Table("wisdom.products").
-        Select("product_id", "name", "price", "vendor_id").
-        Where("vendor_id = ?", vendorId).
-        Scan(&products)
-    return products
 }
