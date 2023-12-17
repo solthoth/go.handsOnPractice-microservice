@@ -42,10 +42,11 @@ func (s *EchoServer) Start(port uint) error {
 func (s *EchoServer) registerRoutes() {
     s.echo.GET("/readiness", s.Readiness)
     s.echo.GET("/liveness", s.Liveness)
-    s.echo.GET("/customers", s.GetCustomers)
-    s.echo.GET("/vendors", s.GetVendors)
-    s.echo.GET("/services", s.GetServices)
-    s.echo.GET("/products", s.GetProducts)
+    api := s.echo.Group("/api") 
+    api.GET("/customers", s.GetCustomers)
+    api.GET("/vendors", s.GetVendors)
+    api.GET("/services", s.GetServices)
+    api.GET("/products/:vendorId", s.GetProducts)
 }
 
 func (s *EchoServer) Readiness(ctx echo.Context) error {
@@ -85,7 +86,7 @@ func (s *EchoServer) GetServices(ctx echo.Context) error {
 }
 
 func (s *EchoServer) GetProducts(ctx echo.Context) error {
-    vendorId := ctx.QueryParams().Get("vendorId")
+    vendorId := ctx.Param("vendorId")
     products := s.DB.GetProductsByVendorId(vendorId)
     if products != nil {
         return ctx.JSON(http.StatusOK, products)
