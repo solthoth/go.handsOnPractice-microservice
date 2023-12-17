@@ -19,6 +19,7 @@ type DatabaseClient interface {
     // Customers
     GetCustomers(ctx context.Context) ([]models.Customer, error)
     AddCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error)
+	GetCustomerById(ctx context.Context, id string) (*models.Customer, error)
     
 	// Vendors
     GetVendors(ctx context.Context) ([]models.Vendor, error)
