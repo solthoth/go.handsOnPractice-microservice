@@ -15,9 +15,17 @@ type Server interface {
     Readiness(ctx echo.Context) error
     Liveness(ctx echo.Context) error
 
+    // Customers
     GetCustomers(ctx echo.Context) error
+    AddCustomer(ctx echo.Context) error
+
+    // Products
     GetProducts(ctx echo.Context) error
+
+    // Services
     GetServices(ctx echo.Context) error
+
+    // Vendors
     GetVendors(ctx echo.Context) error
 }
 
@@ -49,6 +57,7 @@ func (s *EchoServer) registerRoutes() {
 
     customers := s.echo.Group("/customers")
     customers.GET("", s.GetCustomers)
+    customers.POST("", s.AddCustomer)    
 
     vendors := s.echo.Group("/vendors")
     vendors.GET("", s.GetVendors)

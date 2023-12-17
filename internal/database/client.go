@@ -13,7 +13,11 @@ import (
 
 type DatabaseClient interface {
 	Ready() bool
+
+    // Customers
     GetCustomers(ctx context.Context) ([]models.Customer, error)
+    AddCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error)
+    
     GetVendors(ctx context.Context) ([]models.Vendor, error)
     GetServices(ctx context.Context) ([]models.Service, error)
     GetProducts(ctx context.Context, vendorId string) ([]models.Product, error)
