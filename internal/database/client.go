@@ -2,9 +2,11 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/solthoth/go.handsonpractice/internal/dberrors"
 	"github.com/solthoth/go.handsonpractice/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,9 +20,17 @@ type DatabaseClient interface {
     GetCustomers(ctx context.Context) ([]models.Customer, error)
     AddCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error)
     
+	// Vendors
     GetVendors(ctx context.Context) ([]models.Vendor, error)
+	AddVendor(ctx context.Context, vendor *models.Vendor) (*models.Vendor, error)
+
+	// Services
     GetServices(ctx context.Context) ([]models.Service, error)
+	AddService(ctx context.Context, service *models.Service) (*models.Service, error)
+
+	// Products
     GetProducts(ctx context.Context, vendorId string) ([]models.Product, error)
+	AddProduct(ctx context.Context, product *models.Product) (*models.Product, error)
 }
 
 type Client struct {
@@ -57,4 +67,11 @@ func (c Client) Ready() bool {
 		return true
 	}
 	return false
+}
+
+func (c Client) handleDuplicateError(resultError error) error {
+	if errors.Is(resultError, gorm.ErrDuplicatedKey) {
+		return &dberrors.ConflictError{}
+	}
+	return resultError
 }

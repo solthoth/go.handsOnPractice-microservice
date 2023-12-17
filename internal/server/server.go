@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/solthoth/go.handsonpractice/internal/database"
+	"github.com/solthoth/go.handsonpractice/internal/dberrors"
 	"github.com/solthoth/go.handsonpractice/internal/models"
 )
 
@@ -21,12 +22,15 @@ type Server interface {
 
     // Products
     GetProducts(ctx echo.Context) error
+    AddProduct(ctx echo.Context) error
 
     // Services
     GetServices(ctx echo.Context) error
+    AddService(ctx echo.Context) error
 
     // Vendors
     GetVendors(ctx echo.Context) error
+    AddVendor(ctx echo.Context) error
 }
 
 type EchoServer struct {
@@ -57,16 +61,19 @@ func (s *EchoServer) registerRoutes() {
 
     customers := s.echo.Group("/customers")
     customers.GET("", s.GetCustomers)
-    customers.POST("", s.AddCustomer)    
+    customers.POST("", s.AddCustomer)
 
     vendors := s.echo.Group("/vendors")
     vendors.GET("", s.GetVendors)
+    vendors.POST("", s.AddVendor)
 
     services := s.echo.Group("/services")
     services.GET("", s.GetServices)
+    services.POST("", s.AddService)
     
     products := s.echo.Group("/products")
     products.GET(":vendorId", s.GetProducts)
+    products.POST("", s.AddProduct)
 }
 
 func (s *EchoServer) Readiness(ctx echo.Context) error {
@@ -79,4 +86,13 @@ func (s *EchoServer) Readiness(ctx echo.Context) error {
 
 func (s *EchoServer) Liveness(ctx echo.Context) error {
     return ctx.JSON(http.StatusOK, models.Health{Status: "OK"})
+}
+
+func (s EchoServer) handleConflictError(ctx echo.Context, err error) error {
+    switch err.(type){
+    case *dberrors.ConflictError:
+        return ctx.JSON(http.StatusConflict, err)
+    default:
+        return ctx.JSON(http.StatusInternalServerError, err)
+    }
 }

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/solthoth/go.handsonpractice/internal/dberrors"
 	"github.com/solthoth/go.handsonpractice/internal/models"
 )
 
@@ -23,12 +22,7 @@ func (s *EchoServer) AddCustomer(ctx echo.Context) error {
     }
     customer, err := s.DB.AddCustomer(ctx.Request().Context(), customer)
     if err != nil {
-        switch err.(type){
-        case *dberrors.ConflictError:
-            return ctx.JSON(http.StatusConflict, err)
-        default:
-            return ctx.JSON(http.StatusInternalServerError, err)
-        }
+        return s.handleConflictError(ctx, err)
     }
     return ctx.JSON(http.StatusCreated, customer)
 }
