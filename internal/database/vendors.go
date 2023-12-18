@@ -22,3 +22,12 @@ func (c Client) AddVendor(ctx context.Context, vendor *models.Vendor) (*models.V
     }
     return vendor, nil
 }
+
+func (c Client) GetVendorById(ctx context.Context, id string) (*models.Vendor, error) {
+    vendor := new(models.Vendor)
+    result := c.DB.WithContext(ctx).Where(&models.Vendor{VendorId: id}).First(&vendor)
+    if result.Error != nil {
+        return nil, c.handleNotFoundError("vendor", id, result.Error)
+    }
+    return vendor, nil
+}

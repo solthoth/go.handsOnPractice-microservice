@@ -32,12 +32,7 @@ func (s *EchoServer) GetCustomerById(ctx echo.Context) error {
     ID := ctx.Param("id")
     customer, err := s.DB.GetCustomerById(ctx.Request().Context(), ID)
     if err != nil {
-        switch err.(type){
-        case *dberrors.NotFoundError:
-            return ctx.JSON(http.StatusNotFound, err)
-        default:
-            return ctx.JSON(http.StatusInternalServerError, err)
-        }
+        return s.handleNotFoundError(ctx, err)
     }
     return ctx.JSON(http.StatusOK, customer)
 }

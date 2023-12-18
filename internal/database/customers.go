@@ -2,12 +2,9 @@ package database
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"github.com/solthoth/go.handsonpractice/internal/dberrors"
 	"github.com/solthoth/go.handsonpractice/internal/models"
-	"gorm.io/gorm"
 )
 
 func (c Client) GetCustomers(ctx context.Context) ([]models.Customer, error) {
@@ -30,10 +27,7 @@ func (c Client) GetCustomerById(ctx context.Context, id string) (*models.Custome
     customer := &models.Customer{}
     result := c.DB.WithContext(ctx).Where(&models.Customer{CustomerId: id}).First(&customer)
     if result.Error != nil {
-        if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-            return nil, &dberrors.NotFoundError{Entity: "customer", ID: id}
-        }
-        return nil, result.Error
+        return nil, c.handleNotFoundError("customer", id, result.Error)
     }
     return customer, nil
 }

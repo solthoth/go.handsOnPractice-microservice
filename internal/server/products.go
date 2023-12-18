@@ -27,3 +27,12 @@ func (s *EchoServer) AddProduct(ctx echo.Context) error {
     }
     return ctx.JSON(http.StatusCreated, product)
 }
+
+func (s *EchoServer) GetProductById(ctx echo.Context) error {
+    ID := ctx.Param("id")
+    product, err := s.DB.GetProductById(ctx.Request().Context(), ID)
+    if err != nil {
+        return s.handleNotFoundError(ctx, err)
+    }
+    return ctx.JSON(http.StatusOK, product)
+}

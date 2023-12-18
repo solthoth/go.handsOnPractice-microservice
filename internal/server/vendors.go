@@ -26,3 +26,12 @@ func (s *EchoServer) AddVendor(ctx echo.Context) error {
     }
     return ctx.JSON(http.StatusCreated, vendor)
 }
+
+func (s *EchoServer) GetVendorById(ctx echo.Context) error {
+    ID := ctx.Param("id")
+    vendor, err := s.DB.GetVendorById(ctx.Request().Context(), ID)
+    if err != nil {
+        return s.handleNotFoundError(ctx, err)
+    }
+    return ctx.JSON(http.StatusOK, vendor)
+}

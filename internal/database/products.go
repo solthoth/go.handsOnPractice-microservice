@@ -23,3 +23,12 @@ func (c Client) AddProduct(ctx context.Context, product *models.Product) (*model
     }
     return product, nil
 }
+
+func (c Client) GetProductById(ctx context.Context, id string) (*models.Product, error) {
+    product := new(models.Product)
+    result := c.DB.WithContext(ctx).Where(&models.Product{ProductId: id}).First(&product)
+    if result.Error != nil {
+        return nil, c.handleNotFoundError("product", id, result.Error)
+    }
+    return product, nil
+}

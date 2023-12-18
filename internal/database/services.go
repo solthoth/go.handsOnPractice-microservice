@@ -22,3 +22,12 @@ func (c Client) AddService(ctx context.Context, service *models.Service) (*model
     }
     return service, nil
 }
+
+func (c Client) GetServiceById(ctx context.Context, id string) (*models.Service, error) {
+    service := new(models.Service)
+    result := c.DB.WithContext(ctx).Where(&models.Service{ServiceId: id}).First(&service)
+    if result.Error != nil {
+        return nil, c.handleNotFoundError("service", id, result.Error)
+    }
+    return service, nil
+}

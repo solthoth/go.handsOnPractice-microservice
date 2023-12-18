@@ -24,14 +24,17 @@ type DatabaseClient interface {
 	// Vendors
     GetVendors(ctx context.Context) ([]models.Vendor, error)
 	AddVendor(ctx context.Context, vendor *models.Vendor) (*models.Vendor, error)
+	GetVendorById(ctx context.Context, id string) (*models.Vendor, error)
 
 	// Services
     GetServices(ctx context.Context) ([]models.Service, error)
 	AddService(ctx context.Context, service *models.Service) (*models.Service, error)
+	GetServiceById(ctx context.Context, id string) (*models.Service, error)
 
 	// Products
     GetProducts(ctx context.Context, vendorId string) ([]models.Product, error)
 	AddProduct(ctx context.Context, product *models.Product) (*models.Product, error)
+	GetProductById(ctx context.Context, id string) (*models.Product, error)
 }
 
 type Client struct {
@@ -73,6 +76,13 @@ func (c Client) Ready() bool {
 func (c Client) handleDuplicateError(resultError error) error {
 	if errors.Is(resultError, gorm.ErrDuplicatedKey) {
 		return &dberrors.ConflictError{}
+	}
+	return resultError
+}
+
+func (c Client) handleNotFoundError(entity, id string, resultError error) error {
+	if errors.Is(resultError, gorm.ErrRecordNotFound) {
+		return &dberrors.NotFoundError{Entity: entity, ID: id}
 	}
 	return resultError
 }
